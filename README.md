@@ -12,6 +12,7 @@ Goals:
 	* SQLite for dev / team configurations
 	* PostgreSQL for production
 * Support for automated tests
+* Support for logging and debugging
 * Convenient and extendable admin tasks
 	* Running the server
 	* Creating the database
