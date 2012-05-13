@@ -8,5 +8,5 @@ def shutdown_session(exception=None):
 
 @app.route('/')
 def index():
-	users = User.query.all()
-	return render_template('show_users.html', users=users)
+    users = User.query.all()
+    return render_template('show_users.html', users=users)
