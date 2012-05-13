@@ -29,11 +29,16 @@
 
 import os
 from flask import Flask
+from flask.ext.sqlalchemy import SQLAlchemy
+from flask_debugtoolbar import DebugToolbarExtension
 
 # Set to None so code will fail screaming if run_app hasn't been called
 app = None
+app_run_args = {}
 
-def run_app(_run_mode = "production"):
+db = SQLAlchemy()
+
+def create_app(_run_mode = "production"):
     # Create Flask app
     global app
     app = Flask("application")
@@ -46,36 +51,43 @@ def run_app(_run_mode = "production"):
     # because we want to make sure we don't run debug in production by accident.
     app.config["DEBUG"] = False
 
-    # (In the latest version of Flask we could set these to None so the Flask defaults will be used
-    # if we don't change these variables.)
-    host = '127.0.0.1'
-    port = 5000
+    # (In the latest version of Flask we could set port and host to None so the Flask defaults will
+    # be used we don't change these variables.)
+    global app_run_args
+    app_run_args = {'port': 5000, 'host': '127.0.0.1'}
 
     # Dev run mode
     if _run_mode == "dev":
         app.config["DEBUG"] = True
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+        toolbar = DebugToolbarExtension(app)
 
     # Team run mode
     elif _run_mode == "team":
         app.config["DEBUG"] = True
-        port = 5001
+        app_run_args['port'] = 5001
 
     # Production run mode
     elif _run_mode == "production":
         # Get port number from Heroku environment variable
-        port = int(os.environ['PORT'])
+        app_run_args['port'] = int(os.environ['PORT'])
 
     # Unrecognized run mode
     else:
         #TODO: Report error
         return
 
+    # Initialize the database
+    global db
+    db.init_app(app)
+
     # Initialize application
     # Import the views, to apply the decorators which use the global app object.
     import application.views
 
+def run_app():
     # Run the application
     # See flask/app.py run() for the implementation of run().
     # See http://werkzeug.pocoo.org/docs/serving/ for the parameters of Werkzeug's run_simple().
     # If debug is not set, Flask does not change app.debug, which we've already set above.
-    app.run(host=host, port=port)
+    app.run(**app_run_args)
