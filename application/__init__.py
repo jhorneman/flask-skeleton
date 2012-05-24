@@ -2,8 +2,9 @@
 # creating the Flask app, and running it.
 #
 # We need the following run modes:
-#   dev - local, personal development server.
-#   team - still local server, for development by team (specifically non-coder team members).
+#   dev        - local, personal development server.
+#   test       - used for automated testing.
+#   team       - still local server, for development by team (specifically non-coder team members).
 #   production - deployed on Heroku.
 #
 # Don't use environment variables for local configurations.
@@ -28,17 +29,26 @@
 # If this code grows we could move it into its own module instead of __init__.
 
 import os
+import logging
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask_debugtoolbar import DebugToolbarExtension
 
-# Set to None so code will fail screaming if run_app hasn't been called
+# Set to None so code will fail screaming if create_app or run_app haven't been called
 app = None
 app_run_args = {}
 
 db = SQLAlchemy()
 
 def create_app(_run_mode = "production"):
+    # Set up logging
+# if _run_mode != 'dev':
+#     # This messes up Werkzeug's console output - no idea why
+#     console = logging.StreamHandler()
+#     console.setLevel(logging.INFO)
+#     console.setFormatter(logging.Formatter('%(message)s'))
+#     logging.getLogger('').addHandler(console)
+
     # Create Flask app
     global app
     app = Flask("application")
@@ -52,7 +62,7 @@ def create_app(_run_mode = "production"):
     app.config["DEBUG"] = False
 
     # (In the latest version of Flask we could set port and host to None so the Flask defaults will
-    # be used we don't change these variables.)
+    # be used if we don't change these variables.)
     global app_run_args
     app_run_args = {'port': 5000, 'host': '127.0.0.1'}
 
@@ -61,6 +71,12 @@ def create_app(_run_mode = "production"):
         app.config["DEBUG"] = True
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
         toolbar = DebugToolbarExtension(app)
+
+    # Test run mode
+    elif _run_mode == 'test':
+        app.config["DEBUG"] = True
+        app.config["TESTING"] = True
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
 
     # Team run mode
     elif _run_mode == "team":
@@ -74,11 +90,12 @@ def create_app(_run_mode = "production"):
 
     # Unrecognized run mode
     else:
-        #TODO: Report error
+        logging.error("Did not recognize run mode '%s'" % _run_mode)
         return
 
     # Initialize the database
     global db
+    import application.models
     db.init_app(app)
 
     # Initialize application
@@ -89,5 +106,6 @@ def run_app():
     # Run the application
     # See flask/app.py run() for the implementation of run().
     # See http://werkzeug.pocoo.org/docs/serving/ for the parameters of Werkzeug's run_simple().
-    # If debug is not set, Flask does not change app.debug, which we've already set above.
+    # If the debug parameter is not set, Flask does not change app.debug, which is set from
+    # the DEBUG app config variable, which we've set in create_app().
     app.run(**app_run_args)

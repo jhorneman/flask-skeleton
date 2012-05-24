@@ -5,9 +5,10 @@ A skeleton for Flask applications.
 
 Goals:
 * Convenient and safe selection of configurations for multiple run modes:
-	* dev - local, personal development server
-	* team - still local server, for development by team (specifically non-coder team members)
-	* production - deployed on Heroku
+    * dev        - local, personal development server.
+    * test       - used for automated testing.
+    * team       - still local server, for development by team (specifically non-coder team members).
+    * production - deployed on Heroku.
 * Database support using SQLAlchemy
 	* SQLite for dev / team configurations
 	* PostgreSQL for production
