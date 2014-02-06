@@ -1,4 +1,4 @@
-from application import create_app, run_app
+from application import create_app
 from tests import *
 
 import nose

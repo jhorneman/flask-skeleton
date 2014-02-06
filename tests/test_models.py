@@ -31,13 +31,13 @@ class TestCaseUsingDatabase(unittest.TestCase):
         ok_(_klass.query.filter(_klass.name == _name).count() == 0, _msg)
 
 
-class UserModelTestCase(TestCaseUsingDatabase):
-    def test_user_can_be_added(self):
-        with self.app.test_request_context():
-            user = User('admin', 'admin@example.com')
-            self.db_session.add(user)
-            self.db_session.commit()
-
-            found_user = User.query.one()
-            ok_(found_user.name == 'admin')
-            ok_(found_user.email == 'admin@example.com')
+# class UserModelTestCase(TestCaseUsingDatabase):
+#     def test_user_can_be_added(self):
+#         with self.app.test_request_context():
+#             user = User('admin', 'admin@example.com')
+#             self.db_session.add(user)
+#             self.db_session.commit()
+#
+#             found_user = User.query.one()
+#             ok_(found_user.name == 'admin')
+#             ok_(found_user.email == 'admin@example.com')
